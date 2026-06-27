@@ -106,10 +106,27 @@ async function fetchSeries(variableCode, filters) {
   }
 
   const url = buildApiUrl(variableCode, filters);
-  const response = await fetch(url);
+  console.log("Fetching:", url);
+
+  let response;
+
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store",
+    });
+  } catch (error) {
+    throw new Error(
+      `Network/CORS error while loading ${variableCode}. Tried URL: ${url}`
+    );
+  }
 
   if (!response.ok) {
-    throw new Error(`API error ${response.status} while loading ${variableCode}`);
+    const errorText = await response.text();
+    throw new Error(
+      `API error ${response.status} while loading ${variableCode}: ${errorText}`
+    );
   }
 
   return response.json();
