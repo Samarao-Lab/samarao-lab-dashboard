@@ -1,5 +1,5 @@
 
-const API_BASE_URL = "https://samarao-lab-api.onrender.com";
+const API_BASE_URL = "https://samarao-lab-api.onrender.com/api/v1";
 
 const VARIABLE_LABELS = {
   day_ahead_price: "Day-Ahead Price",
