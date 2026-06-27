@@ -1,6 +1,5 @@
-// Later, replace this with your deployed API URL.
-// Example: const API_BASE_URL = "https://samarao-lab-api.onrender.com/api/v1";
-const API_BASE_URL = "";
+
+const API_BASE_URL = "https://samarao-lab-api.onrender.com";
 
 const VARIABLE_LABELS = {
   day_ahead_price: "Day-Ahead Price",
