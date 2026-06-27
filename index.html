@@ -13,111 +13,189 @@
 
   <body>
     <header class="hero">
-      <div>
-        <p class="eyebrow">Samarao Lab</p>
-        <h1>Portuguese Energy Market Dashboard</h1>
-        <p class="subtitle">
-          Interactive dashboard powered by a FastAPI time-series API.
-        </p>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow">Samarao Lab</p>
+          <h1>Portuguese Energy Market Platform</h1>
+          <p class="subtitle">
+            Public dashboard powered by a private FastAPI time-series API.
+          </p>
+        </div>
+
+        <div class="hero-logo-card">
+          <img
+            src="assets/tecnico-logo.png"
+            alt="Instituto Superior Técnico logo"
+            class="tecnico-logo"
+            onerror="
+              this.style.display = 'none';
+              document.getElementById('logoFallback').style.display = 'block';
+            "
+          />
+          <span id="logoFallback" class="logo-fallback">Técnico</span>
+        </div>
       </div>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-section="market-data">
+          Market Data
+        </button>
+        <button class="nav-link" data-section="mock-x">Mock X</button>
+        <button class="nav-link" data-section="mock-y">Mock Y</button>
+      </nav>
     </header>
 
     <main class="container">
-      <section class="panel controls">
-        <div class="control-group">
-          <label for="variable">Variable</label>
-          <select id="variable">
-            <option value="day_ahead_price">Day-Ahead Price</option>
-            <option value="intraday_price_session_1">
-              Intraday Price Session 1
-            </option>
-            <option value="intraday_price_session_2">
-              Intraday Price Session 2
-            </option>
-            <option value="intraday_price_session_3">
-              Intraday Price Session 3
-            </option>
-            <option value="mfrr_price_schedule_up">
-              mFRR Scheduled Price Up
-            </option>
-            <option value="mfrr_price_schedule_down">
-              mFRR Scheduled Price Down
-            </option>
-            <option value="bafrr_final_price_up">BaFRR Final Price Up</option>
-            <option value="bafrr_final_price_down">
-              BaFRR Final Price Down
-            </option>
-            <option value="bafrr_contracted_up">BaFRR Contracted Up</option>
-            <option value="bafrr_contracted_down">BaFRR Contracted Down</option>
-            <option value="afrr_activation_up">aFRR Activation Up</option>
-            <option value="afrr_activation_down">aFRR Activation Down</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="zone">Zone</label>
-          <input id="zone" value="PT" />
-        </div>
-
-        <div class="control-group">
-          <label for="source">Source</label>
-          <input id="source" value="REN" />
-        </div>
-
-        <div class="control-group">
-          <label for="resolution">Resolution</label>
-          <select id="resolution">
-            <option value="PT15M">PT15M</option>
-            <option value="PT60M">PT60M</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="start">Start</label>
-          <input id="start" type="date" value="2025-01-01" />
-        </div>
-
-        <div class="control-group">
-          <label for="end">End</label>
-          <input id="end" type="date" value="2025-01-07" />
-        </div>
-
-        <button id="loadButton">Load data</button>
-      </section>
-
-      <section class="status-grid">
-        <div class="stat-card">
-          <span class="stat-label">Variable</span>
-          <strong id="statVariable">-</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">Returned rows</span>
-          <strong id="statRows">-</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">Unit</span>
-          <strong id="statUnit">-</strong>
-        </div>
-
-        <div class="stat-card">
-          <span class="stat-label">Source</span>
-          <strong id="statSource">-</strong>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="chart-header">
+      <section id="market-data" class="page-section active">
+        <section class="panel intro-panel">
           <div>
-            <h2 id="chartTitle">Time Series</h2>
-            <p id="chartSubtitle">Select filters and load data.</p>
+            <h2>Market Data</h2>
+            <p>
+              Compare Portuguese market time series by variable, zone, source,
+              resolution, and date range.
+            </p>
           </div>
           <span id="modeBadge" class="badge">Mock mode</span>
-        </div>
+        </section>
 
-        <div id="chart"></div>
-        <p id="message" class="message"></p>
+        <section class="panel controls">
+          <div class="control-group variable-control">
+            <label for="variables">Variables</label>
+            <select id="variables" multiple size="6">
+              <option value="day_ahead_price" selected>Day-Ahead Price</option>
+              <option value="intraday_price_session_1">
+                Intraday Price Session 1
+              </option>
+              <option value="intraday_price_session_2">
+                Intraday Price Session 2
+              </option>
+              <option value="intraday_price_session_3">
+                Intraday Price Session 3
+              </option>
+              <option value="mfrr_price_schedule_up">
+                mFRR Scheduled Price Up
+              </option>
+              <option value="mfrr_price_schedule_down">
+                mFRR Scheduled Price Down
+              </option>
+              <option value="bafrr_final_price_up">BaFRR Final Price Up</option>
+              <option value="bafrr_final_price_down">
+                BaFRR Final Price Down
+              </option>
+              <option value="bafrr_contracted_up">BaFRR Contracted Up</option>
+              <option value="bafrr_contracted_down">
+                BaFRR Contracted Down
+              </option>
+              <option value="afrr_activation_up">aFRR Activation Up</option>
+              <option value="afrr_activation_down">aFRR Activation Down</option>
+              <option value="mfrr_price_direct_q1t_up">
+                mFRR Direct Price Q1t Up
+              </option>
+              <option value="mfrr_price_direct_q1t_down">
+                mFRR Direct Price Q1t Down
+              </option>
+              <option value="mfrr_price_direct_qt_up">
+                mFRR Direct Price Qt Up
+              </option>
+              <option value="mfrr_price_direct_qt_down">
+                mFRR Direct Price Qt Down
+              </option>
+            </select>
+            <small>Hold Ctrl/Cmd to select more than one.</small>
+          </div>
+
+          <div class="control-group">
+            <label for="zone">Zone</label>
+            <select id="zone">
+              <option value="PT" selected>Portugal</option>
+              <option value="10YPT-REN------W">10YPT-REN------W</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="source">Source</label>
+            <select id="source">
+              <option value="REN" selected>REN</option>
+              <option value="ENTSOE">ENTSOE</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="resolution">Resolution</label>
+            <select id="resolution">
+              <option value="PT15M" selected>PT15M</option>
+              <option value="PT60M">PT60M</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="start">Start</label>
+            <input id="start" type="date" value="2025-01-01" />
+          </div>
+
+          <div class="control-group">
+            <label for="end">End</label>
+            <input id="end" type="date" value="2025-01-07" />
+          </div>
+
+          <button id="loadButton">Load data</button>
+        </section>
+
+        <section class="status-grid">
+          <div class="stat-card">
+            <span class="stat-label">Selected variables</span>
+            <strong id="statVariable">-</strong>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Returned rows</span>
+            <strong id="statRows">-</strong>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Unit</span>
+            <strong id="statUnit">-</strong>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Source</span>
+            <strong id="statSource">-</strong>
+          </div>
+        </section>
+
+        <section class="panel chart-panel">
+          <div class="chart-header">
+            <div>
+              <h2 id="chartTitle">Time Series Comparison</h2>
+              <p id="chartSubtitle">Select filters and load data.</p>
+            </div>
+          </div>
+
+          <div id="chart"></div>
+          <p id="message" class="message"></p>
+        </section>
+      </section>
+
+      <section id="mock-x" class="page-section">
+        <section class="panel placeholder-panel">
+          <p class="eyebrow dark">Future module</p>
+          <h2>Mock X</h2>
+          <p>
+            This page is a placeholder for a future dashboard, model, notebook
+            result, or portfolio module.
+          </p>
+        </section>
+      </section>
+
+      <section id="mock-y" class="page-section">
+        <section class="panel placeholder-panel">
+          <p class="eyebrow dark">Future module</p>
+          <h2>Mock Y</h2>
+          <p>
+            This page is another placeholder. Later, this can become forecasts,
+            reports, optimization results, or API documentation.
+          </p>
+        </section>
       </section>
     </main>
 
