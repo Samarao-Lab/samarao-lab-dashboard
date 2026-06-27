@@ -81,7 +81,6 @@ function getFilters() {
     variableCodes: getSelectedVariables(),
     zone: elements.zone.value,
     source: elements.source.value,
-    resolution: elements.resolution.value,
     start: elements.start.value,
     end: elements.end.value,
   };
@@ -94,7 +93,6 @@ function buildApiUrl(variableCode, filters) {
   url.searchParams.set("start", filters.start);
   url.searchParams.set("end", filters.end);
   url.searchParams.set("source", filters.source);
-  url.searchParams.set("resolution", filters.resolution);
   url.searchParams.set("limit", "50000");
 
   return url.toString();
@@ -291,7 +289,7 @@ async function loadDashboard() {
 
     elements.chartTitle.textContent = "Market Data Comparison";
     elements.chartSubtitle.textContent =
-      `${filters.zone} · ${filters.source} · ${filters.resolution} · ${filters.start} to ${filters.end}`;
+      `${filters.zone} · ${filters.source} · ${filters.start} to ${filters.end}`;
 
     updateStats(payloads, filters);
     renderChart(payloads);
