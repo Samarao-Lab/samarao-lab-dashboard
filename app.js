@@ -72,7 +72,9 @@ function setupNavigation() {
 }
 
 function getSelectedVariables() {
-  return Array.from(elements.variables.selectedOptions).map((option) => option.value);
+  return Array.from(
+    document.querySelectorAll("#variables input[type='checkbox']:checked")
+  ).map((input) => input.value);
 }
 
 function getFilters() {
@@ -132,7 +134,8 @@ function createMockResponse(variableCode, filters) {
 
   const startDate = new Date(`${filters.start}T00:00:00Z`);
   const endDate = new Date(`${filters.end}T00:00:00Z`);
-  const dayCount = Math.max(1, Math.round((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1);
+  const dayCount =
+    Math.max(1, Math.round((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1);
 
   const variableIndex = Object.keys(VARIABLE_LABELS).indexOf(variableCode);
   const safeIndex = variableIndex >= 0 ? variableIndex : 0;
@@ -147,7 +150,9 @@ function createMockResponse(variableCode, filters) {
 
     data.push({
       datetime_utc_start: timestamp.toISOString(),
-      datetime_utc_end: new Date(timestamp.getTime() + intervalMinutes * 60 * 1000).toISOString(),
+      datetime_utc_end: new Date(
+        timestamp.getTime() + intervalMinutes * 60 * 1000
+      ).toISOString(),
       value: Number(value.toFixed(2)),
       source_code: filters.source,
       resolution_code: filters.resolution,

@@ -13,6 +13,26 @@
 
   <body>
     <header class="hero">
+      <div class="hero-brand-row">
+        <div class="brand-left">
+          <img
+            src="assets/tecnico-logo.png"
+            alt="Instituto Superior Técnico logo"
+            class="tecnico-logo"
+          />
+          <span class="brand-divider"></span>
+          <span class="brand-name">Samarao Lab</span>
+        </div>
+
+        <nav class="site-nav" aria-label="Main navigation">
+          <button class="nav-link active" data-section="market-data">
+            Market Data
+          </button>
+          <button class="nav-link" data-section="mock-x">Mock X</button>
+          <button class="nav-link" data-section="mock-y">Mock Y</button>
+        </nav>
+      </div>
+
       <div class="hero-inner">
         <div class="hero-copy">
           <p class="eyebrow">Samarao Lab</p>
@@ -21,28 +41,7 @@
             Public dashboard powered by a private FastAPI time-series API.
           </p>
         </div>
-
-        <div class="hero-logo-card">
-          <img
-            src="assets/tecnico-logo.png"
-            alt="Instituto Superior Técnico logo"
-            class="tecnico-logo"
-            onerror="
-              this.style.display = 'none';
-              document.getElementById('logoFallback').style.display = 'block';
-            "
-          />
-          <span id="logoFallback" class="logo-fallback">Técnico</span>
-        </div>
       </div>
-
-      <nav class="site-nav" aria-label="Main navigation">
-        <button class="nav-link active" data-section="market-data">
-          Market Data
-        </button>
-        <button class="nav-link" data-section="mock-x">Mock X</button>
-        <button class="nav-link" data-section="mock-y">Mock Y</button>
-      </nav>
     </header>
 
     <main class="container">
@@ -60,48 +59,92 @@
 
         <section class="panel controls">
           <div class="control-group variable-control">
-            <label for="variables">Variables</label>
-            <select id="variables" multiple size="6">
-              <option value="day_ahead_price" selected>Day-Ahead Price</option>
-              <option value="intraday_price_session_1">
-                Intraday Price Session 1
-              </option>
-              <option value="intraday_price_session_2">
-                Intraday Price Session 2
-              </option>
-              <option value="intraday_price_session_3">
-                Intraday Price Session 3
-              </option>
-              <option value="mfrr_price_schedule_up">
-                mFRR Scheduled Price Up
-              </option>
-              <option value="mfrr_price_schedule_down">
-                mFRR Scheduled Price Down
-              </option>
-              <option value="bafrr_final_price_up">BaFRR Final Price Up</option>
-              <option value="bafrr_final_price_down">
-                BaFRR Final Price Down
-              </option>
-              <option value="bafrr_contracted_up">BaFRR Contracted Up</option>
-              <option value="bafrr_contracted_down">
-                BaFRR Contracted Down
-              </option>
-              <option value="afrr_activation_up">aFRR Activation Up</option>
-              <option value="afrr_activation_down">aFRR Activation Down</option>
-              <option value="mfrr_price_direct_q1t_up">
-                mFRR Direct Price Q1t Up
-              </option>
-              <option value="mfrr_price_direct_q1t_down">
-                mFRR Direct Price Q1t Down
-              </option>
-              <option value="mfrr_price_direct_qt_up">
-                mFRR Direct Price Qt Up
-              </option>
-              <option value="mfrr_price_direct_qt_down">
-                mFRR Direct Price Qt Down
-              </option>
-            </select>
-            <small>Hold Ctrl/Cmd to select more than one.</small>
+            <div class="control-header">
+              <label>Variables</label>
+              <small>Select one or more series to compare.</small>
+            </div>
+
+            <div id="variables" class="variable-grid">
+              <label class="variable-chip">
+                <input type="checkbox" value="day_ahead_price" checked />
+                <span>Day-Ahead Price</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="intraday_price_session_1" />
+                <span>Intraday Session 1</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="intraday_price_session_2" />
+                <span>Intraday Session 2</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="intraday_price_session_3" />
+                <span>Intraday Session 3</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="mfrr_price_schedule_up" />
+                <span>mFRR Schedule Up</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="mfrr_price_schedule_down" />
+                <span>mFRR Schedule Down</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="bafrr_final_price_up" />
+                <span>BaFRR Final Up</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="bafrr_final_price_down" />
+                <span>BaFRR Final Down</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="bafrr_contracted_up" />
+                <span>BaFRR Contracted Up</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="bafrr_contracted_down" />
+                <span>BaFRR Contracted Down</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="afrr_activation_up" />
+                <span>aFRR Activation Up</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="afrr_activation_down" />
+                <span>aFRR Activation Down</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="mfrr_price_direct_q1t_up" />
+                <span>mFRR Direct Q1t Up</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="mfrr_price_direct_q1t_down" />
+                <span>mFRR Direct Q1t Down</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="mfrr_price_direct_qt_up" />
+                <span>mFRR Direct Qt Up</span>
+              </label>
+
+              <label class="variable-chip">
+                <input type="checkbox" value="mfrr_price_direct_qt_down" />
+                <span>mFRR Direct Qt Down</span>
+              </label>
+            </div>
           </div>
 
           <div class="control-group">

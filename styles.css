@@ -24,20 +24,53 @@ body {
 .hero {
   background: linear-gradient(135deg, #0f172a, #1d4ed8);
   color: white;
-  padding: 42px 24px 72px;
+  padding: 24px 24px 88px;
+}
+
+.hero-brand-row {
+  max-width: 1160px;
+  margin: 0 auto 42px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.brand-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tecnico-logo {
+  width: 92px;
+  max-height: 64px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.brand-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.brand-name {
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  color: #e0ecff;
 }
 
 .hero-inner {
   max-width: 1160px;
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  align-items: flex-start;
 }
 
 .hero-copy {
-  max-width: 760px;
+  max-width: 900px;
 }
 
 .eyebrow {
@@ -56,7 +89,7 @@ body {
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
   line-height: 1;
 }
 
@@ -66,41 +99,14 @@ h1 {
   font-size: 1.1rem;
 }
 
-.hero-logo-card {
-  min-width: 140px;
-  min-height: 82px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18);
-}
-
-.tecnico-logo {
-  max-width: 128px;
-  max-height: 64px;
-  object-fit: contain;
-}
-
-.logo-fallback {
-  display: none;
-  color: var(--accent-dark);
-  font-weight: 900;
-  font-size: 1.2rem;
-}
-
 .site-nav {
-  max-width: 1160px;
-  margin: 28px auto 0;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
 .nav-link {
-  min-height: 42px;
+  min-height: 40px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 0 18px;
@@ -121,7 +127,7 @@ h1 {
 
 .container {
   max-width: 1160px;
-  margin: -44px auto 48px;
+  margin: -54px auto 48px;
   padding: 0 24px;
 }
 
@@ -161,9 +167,20 @@ h1 {
   color: var(--muted);
 }
 
+.badge {
+  align-self: start;
+  background: var(--success-soft);
+  color: var(--accent-dark);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .controls {
   display: grid;
-  grid-template-columns: 2fr repeat(5, minmax(120px, 1fr)) auto;
+  grid-template-columns: repeat(6, minmax(120px, 1fr)) auto;
   gap: 16px;
   padding: 20px;
   align-items: end;
@@ -176,7 +193,14 @@ h1 {
 }
 
 .variable-control {
-  min-width: 220px;
+  grid-column: 1 / -1;
+}
+
+.control-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
 }
 
 label {
@@ -188,6 +212,46 @@ label {
 small {
   color: var(--muted);
   font-size: 0.74rem;
+}
+
+.variable-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.variable-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.variable-chip:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.variable-chip input {
+  width: 16px;
+  height: 16px;
+  min-height: auto;
+  accent-color: var(--accent);
+}
+
+.variable-chip:has(input:checked) {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1d4ed8;
 }
 
 input,
@@ -204,16 +268,6 @@ input,
 select {
   min-height: 42px;
   background: white;
-}
-
-select[multiple] {
-  min-height: 150px;
-  padding: 8px;
-}
-
-select[multiple] option {
-  padding: 6px;
-  border-radius: 8px;
 }
 
 button {
@@ -274,17 +328,6 @@ button:disabled {
   color: var(--muted);
 }
 
-.badge {
-  align-self: start;
-  background: var(--success-soft);
-  color: var(--accent-dark);
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
 #chart {
   width: 100%;
   height: 540px;
@@ -328,13 +371,22 @@ footer {
   }
 }
 
-@media (max-width: 700px) {
-  .hero-inner {
+@media (max-width: 760px) {
+  .hero-brand-row {
+    align-items: flex-start;
     flex-direction: column;
   }
 
-  .hero-logo-card {
-    align-self: flex-start;
+  .site-nav {
+    width: 100%;
+  }
+
+  .nav-link {
+    flex: 1;
+  }
+
+  .tecnico-logo {
+    width: 72px;
   }
 
   .controls,
@@ -347,6 +399,6 @@ footer {
   }
 
   h1 {
-    font-size: 2.3rem;
+    font-size: 2.4rem;
   }
 }
