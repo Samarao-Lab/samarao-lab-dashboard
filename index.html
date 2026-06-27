@@ -1,11 +1,130 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Samarao Lab Dashboard</title>
+
+    <link rel="stylesheet" href="styles.css" />
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   </head>
+
   <body>
-    <h1>Samarao Lab Dashboard</h1>
-    <p>GitHub Pages is working 🚀</p>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Samarao Lab</p>
+        <h1>Portuguese Energy Market Dashboard</h1>
+        <p class="subtitle">
+          Interactive dashboard powered by a FastAPI time-series API.
+        </p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="panel controls">
+        <div class="control-group">
+          <label for="variable">Variable</label>
+          <select id="variable">
+            <option value="day_ahead_price">Day-Ahead Price</option>
+            <option value="intraday_price_session_1">
+              Intraday Price Session 1
+            </option>
+            <option value="intraday_price_session_2">
+              Intraday Price Session 2
+            </option>
+            <option value="intraday_price_session_3">
+              Intraday Price Session 3
+            </option>
+            <option value="mfrr_price_schedule_up">
+              mFRR Scheduled Price Up
+            </option>
+            <option value="mfrr_price_schedule_down">
+              mFRR Scheduled Price Down
+            </option>
+            <option value="bafrr_final_price_up">BaFRR Final Price Up</option>
+            <option value="bafrr_final_price_down">
+              BaFRR Final Price Down
+            </option>
+            <option value="bafrr_contracted_up">BaFRR Contracted Up</option>
+            <option value="bafrr_contracted_down">BaFRR Contracted Down</option>
+            <option value="afrr_activation_up">aFRR Activation Up</option>
+            <option value="afrr_activation_down">aFRR Activation Down</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="zone">Zone</label>
+          <input id="zone" value="PT" />
+        </div>
+
+        <div class="control-group">
+          <label for="source">Source</label>
+          <input id="source" value="REN" />
+        </div>
+
+        <div class="control-group">
+          <label for="resolution">Resolution</label>
+          <select id="resolution">
+            <option value="PT15M">PT15M</option>
+            <option value="PT60M">PT60M</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="start">Start</label>
+          <input id="start" type="date" value="2025-01-01" />
+        </div>
+
+        <div class="control-group">
+          <label for="end">End</label>
+          <input id="end" type="date" value="2025-01-07" />
+        </div>
+
+        <button id="loadButton">Load data</button>
+      </section>
+
+      <section class="status-grid">
+        <div class="stat-card">
+          <span class="stat-label">Variable</span>
+          <strong id="statVariable">-</strong>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Returned rows</span>
+          <strong id="statRows">-</strong>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Unit</span>
+          <strong id="statUnit">-</strong>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Source</span>
+          <strong id="statSource">-</strong>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="chart-header">
+          <div>
+            <h2 id="chartTitle">Time Series</h2>
+            <p id="chartSubtitle">Select filters and load data.</p>
+          </div>
+          <span id="modeBadge" class="badge">Mock mode</span>
+        </div>
+
+        <div id="chart"></div>
+        <p id="message" class="message"></p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built with GitHub Pages + FastAPI.</p>
+    </footer>
+
+    <script src="app.js"></script>
   </body>
 </html>
