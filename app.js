@@ -1,6 +1,14 @@
 const API_BASE_URL = "https://samarao-lab-api.onrender.com/api/v1";
 const SOURCE_CODE = "REN";
 
+const SPREAD_ELIGIBLE_VARIABLES = new Set([
+  "day_ahead_price",
+  "intraday_price_session_1",
+  "intraday_price_session_2",
+  "intraday_price_session_3",
+  "mfrr_price_schedule_up",
+]);
+
 const PRICE_VARIABLES = [
   {
     code: "day_ahead_price",
@@ -50,11 +58,6 @@ const elements = {
   referencePrice: document.getElementById("referencePrice"),
   comparisonPrices: document.getElementById("comparisonPrices"),
   loadButton: document.getElementById("loadButton"),
-
-  statVariable: document.getElementById("statVariable"),
-  statRows: document.getElementById("statRows"),
-  statUnit: document.getElementById("statUnit"),
-  statSource: document.getElementById("statSource"),
 
   chartTitle: document.getElementById("chartTitle"),
   chartSubtitle: document.getElementById("chartSubtitle"),
@@ -267,16 +270,6 @@ function getUniqueUnits(payloads) {
   ];
 }
 
-function updateStats(payloads) {
-  const returnedRows = payloads.reduce((sum, payload) => sum + payload.returned, 0);
-  const units = getUniqueUnits(payloads);
-
-  elements.statVariable.textContent = `${payloads.length} series`;
-  elements.statRows.textContent = returnedRows.toLocaleString();
-  elements.statUnit.textContent = units.length === 1 ? units[0] : units.join(" / ");
-  elements.statSource.textContent = SOURCE_CODE;
-}
-
 function renderPriceChart(referencePayload, comparisonPayloads) {
   const payloads = [referencePayload, ...comparisonPayloads];
 
@@ -433,7 +426,11 @@ function buildSpreadTraces(referencePayload, comparisonPayloads) {
 }
 
 function renderSpreadChart(referencePayload, comparisonPayloads) {
-  const traces = buildSpreadTraces(referencePayload, comparisonPayloads);
+  const spreadEligiblePayloads = comparisonPayloads.filter((payload) => {
+    return SPREAD_ELIGIBLE_VARIABLES.has(payload.variable_code);
+  });
+
+  const traces = buildSpreadTraces(referencePayload, spreadEligiblePayloads);
   const referenceUnit = referencePayload.unit_symbol || "reference unit";
 
   const totalSpreadRows = traces.reduce((sum, trace) => sum + trace.y.length, 0);
@@ -445,10 +442,10 @@ function renderSpreadChart(referencePayload, comparisonPayloads) {
       showgrid: true,
     },
     yaxis: {
-      title: `Spread (${referenceUnit})`,
+      title: `Stacked spread (${referenceUnit})`,
       showgrid: true,
     },
-    barmode: "group",
+    barmode: "relative",
     hovermode: "x unified",
     legend: {
       orientation: "h",
@@ -460,6 +457,32 @@ function renderSpreadChart(referencePayload, comparisonPayloads) {
     responsive: true,
     displaylogo: false,
   };
+
+  if (traces.length === 0) {
+    Plotly.newPlot(
+      "spreadChart",
+      [],
+      {
+        margin: { l: 72, r: 24, t: 24, b: 72 },
+        xaxis: { visible: false },
+        yaxis: { visible: false },
+        annotations: [
+          {
+            text: "No spread-eligible comparison markets selected.",
+            xref: "paper",
+            yref: "paper",
+            x: 0.5,
+            y: 0.5,
+            showarrow: false,
+            font: { size: 14 },
+          },
+        ],
+      },
+      config
+    );
+
+    return 0;
+  }
 
   Plotly.newPlot("spreadChart", traces, layout, config);
 
@@ -489,24 +512,18 @@ async function loadDashboard() {
       `${filters.country} · ${filters.zone} · ${filters.start} to ${filters.end}`;
 
     elements.spreadSubtitle.textContent =
-      `Buying in ${getDisplayName(referencePayload)} and selling in selected comparison markets.`;
+      `Stacked spreads from buying in ${getDisplayName(referencePayload)} and selling in spread-eligible comparison markets. Capacity price series are excluded from this chart.`;
 
-    updateStats(payloads);
     renderPriceChart(referencePayload, comparisonPayloads);
 
     const spreadRows = renderSpreadChart(referencePayload, comparisonPayloads);
 
     const totalRows = payloads.reduce((sum, payload) => sum + payload.returned, 0);
-    const emptySeries = payloads.filter((payload) => payload.returned === 0);
 
     if (totalRows === 0) {
       elements.message.textContent = "No data returned for these filters.";
-    } else if (emptySeries.length > 0) {
-      elements.message.textContent =
-        `Loaded ${totalRows.toLocaleString()} rows. Some selected markets returned no data.`;
     } else {
-      elements.message.textContent =
-        `Loaded ${totalRows.toLocaleString()} rows. Spread chart uses ${spreadRows.toLocaleString()} exact timestamp matches.`;
+      elements.message.textContent = "";
     }
   } catch (error) {
     console.error(error);

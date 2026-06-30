@@ -35,11 +35,9 @@
 
       <div class="hero-inner">
         <div class="hero-copy">
-          <p class="eyebrow">Samarao Lab</p>
+          <p class="eyebrow"></p>
           <h1>Energy and Ancillary Market Research Platform</h1>
-          <p class="subtitle">
-            Dashboard powered by GitHub Pages and Public FastAPI.
-          </p>
+          <p class="subtitle">Dashboard powered by GitHub Pages and FastAPI.</p>
         </div>
       </div>
     </header>
@@ -126,48 +124,30 @@
             <p id="message" class="message"></p>
           </div>
 
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span>Series</span>
-              <strong id="statVariable">-</strong>
-            </div>
-            <div class="stat-card">
-              <span>Rows</span>
-              <strong id="statRows">-</strong>
-            </div>
-            <div class="stat-card">
-              <span>Units</span>
-              <strong id="statUnit">-</strong>
-            </div>
-            <div class="stat-card">
-              <span>Source</span>
-              <strong id="statSource">REN</strong>
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <h3 id="chartTitle">Price comparison</h3>
-                <p id="chartSubtitle">Reference and comparison price series.</p>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 id="chartTitle">Price comparison</h3>
+                  <p id="chartSubtitle">Reference and comparison price series.</p>
+                </div>
+                <span id="modeBadge" class="mode-badge">Live API</span>
               </div>
-              <span id="modeBadge" class="mode-badge">Live API</span>
+              <div id="chart"></div>
             </div>
-            <div id="chart"></div>
-          </div>
 
-          <div class="chart-card">
-            <div class="chart-header">
-              <div>
-                <h3>Spread analysis</h3>
-                <p id="spreadSubtitle">
-                  Comparison market minus reference market.
-                </p>
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3>Spread analysis</h3>
+                  <p id="spreadSubtitle">
+                    Comparison market minus reference market.
+                  </p>
+                </div>
               </div>
+              <div id="spreadChart"></div>
             </div>
-            <div id="spreadChart"></div>
           </div>
-        </div>
 
         <div id="volumes-subtab" class="market-subtab-content">
           <div class="panel placeholder-panel">
