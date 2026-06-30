@@ -47,6 +47,8 @@ const PRICE_LABEL_BY_CODE = Object.fromEntries(
 const elements = {
   navLinks: document.querySelectorAll(".nav-link"),
   sections: document.querySelectorAll(".page-section"),
+  analysisLayout: document.getElementById("analysisLayout"),
+  sidebarToggle: document.getElementById("sidebarToggle"),
 
   marketSubtabs: document.querySelectorAll(".market-subtab"),
   marketSubtabContents: document.querySelectorAll(".market-subtab-content"),
@@ -489,6 +491,121 @@ function renderSpreadChart(referencePayload, comparisonPayloads) {
   return totalSpreadRows;
 }
 
+let isSyncingCharts = false;
+
+function addTimestampMarker(chartId, timestamp) {
+  Plotly.relayout(chartId, {
+    shapes: [
+      {
+        type: "line",
+        xref: "x",
+        yref: "paper",
+        x0: timestamp,
+        x1: timestamp,
+        y0: 0,
+        y1: 1,
+        line: {
+          width: 2,
+          dash: "dot",
+        },
+      },
+    ],
+  });
+}
+
+function selectTimestampOnCharts(timestamp) {
+  addTimestampMarker("chart", timestamp);
+  addTimestampMarker("spreadChart", timestamp);
+}
+
+function syncChartRange(sourceId, targetId, eventData) {
+  if (isSyncingCharts) {
+    return;
+  }
+
+  const rangeStart = eventData["xaxis.range[0]"];
+  const rangeEnd = eventData["xaxis.range[1]"];
+  const autorange = eventData["xaxis.autorange"];
+
+  if (!rangeStart && !rangeEnd && !autorange) {
+    return;
+  }
+
+  isSyncingCharts = true;
+
+  if (autorange) {
+    Plotly.relayout(targetId, {
+      "xaxis.autorange": true,
+    }).then(() => {
+      isSyncingCharts = false;
+    });
+  } else {
+    Plotly.relayout(targetId, {
+      "xaxis.range[0]": rangeStart,
+      "xaxis.range[1]": rangeEnd,
+    }).then(() => {
+      isSyncingCharts = false;
+    });
+  }
+}
+
+function setupChartSync() {
+  const chart = document.getElementById("chart");
+  const spreadChart = document.getElementById("spreadChart");
+
+  if (!chart || !spreadChart) {
+    return;
+  }
+
+  if (chart.removeAllListeners) {
+    chart.removeAllListeners("plotly_click");
+    chart.removeAllListeners("plotly_relayout");
+  }
+
+  if (spreadChart.removeAllListeners) {
+    spreadChart.removeAllListeners("plotly_click");
+    spreadChart.removeAllListeners("plotly_relayout");
+  }
+
+  chart.on("plotly_click", (eventData) => {
+    const timestamp = eventData.points?.[0]?.x;
+    if (timestamp) {
+      selectTimestampOnCharts(timestamp);
+    }
+  });
+
+  spreadChart.on("plotly_click", (eventData) => {
+    const timestamp = eventData.points?.[0]?.x;
+    if (timestamp) {
+      selectTimestampOnCharts(timestamp);
+    }
+  });
+
+  chart.on("plotly_relayout", (eventData) => {
+    syncChartRange("chart", "spreadChart", eventData);
+  });
+
+  spreadChart.on("plotly_relayout", (eventData) => {
+    syncChartRange("spreadChart", "chart", eventData);
+  });
+}
+
+function setupSidebarToggle() {
+  if (!elements.sidebarToggle || !elements.analysisLayout) {
+    return;
+  }
+
+  elements.sidebarToggle.addEventListener("click", () => {
+    const isCollapsed = elements.analysisLayout.classList.toggle("sidebar-collapsed");
+    elements.sidebarToggle.textContent = isCollapsed ? "Show" : "Hide";
+
+    setTimeout(() => {
+      Plotly.Plots.resize("chart");
+      Plotly.Plots.resize("spreadChart");
+    }, 250);
+  });
+}
+
 async function loadDashboard() {
   const filters = getFilters();
 
@@ -515,16 +632,16 @@ async function loadDashboard() {
       `Stacked spreads from buying in ${getDisplayName(referencePayload)} and selling in spread-eligible comparison markets. Capacity price series are excluded from this chart.`;
 
     renderPriceChart(referencePayload, comparisonPayloads);
-
-    const spreadRows = renderSpreadChart(referencePayload, comparisonPayloads);
+    renderSpreadChart(referencePayload, comparisonPayloads);
+    setupChartSync();
 
     const totalRows = payloads.reduce((sum, payload) => sum + payload.returned, 0);
 
-    if (totalRows === 0) {
-      elements.message.textContent = "No data returned for these filters.";
-    } else {
-      elements.message.textContent = "";
-    }
+  if (totalRows === 0) {
+    elements.message.textContent = "No data returned for these filters.";
+  } else {
+    elements.message.textContent = "";
+  }
   } catch (error) {
     console.error(error);
     elements.message.textContent = `Could not load data: ${error.message}`;
@@ -537,6 +654,7 @@ async function loadDashboard() {
 setupNavigation();
 setupMarketSubtabs();
 setupPriceSelectors();
+setupSidebarToggle();
 
 elements.loadButton.addEventListener("click", loadDashboard);
 

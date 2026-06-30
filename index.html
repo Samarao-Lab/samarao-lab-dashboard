@@ -24,12 +24,24 @@
           <span class="brand-name">Samarao Lab</span>
         </div>
 
-        <nav class="site-nav" aria-label="Main navigation">
+        <nav class="top-nav">
           <button class="nav-link active" data-section="market-data">
             Electricity Markets & Ancillary Services
           </button>
-          <button class="nav-link" data-section="mock-x">Mock X</button>
-          <button class="nav-link" data-section="mock-y">Mock Y</button>
+
+          <button class="nav-link" data-section="api-docs">
+            API Documentation
+          </button>
+
+          <button class="nav-link" data-section="about">About</button>
+
+          <div class="nav-more">
+            <button class="nav-more-button" type="button">More ▾</button>
+            <div class="nav-dropdown">
+              <button class="nav-link" data-section="mock-x">Mock X</button>
+              <button class="nav-link" data-section="mock-y">Mock Y</button>
+            </div>
+          </div>
         </nav>
       </div>
 
@@ -66,88 +78,130 @@
         </div>
 
         <div id="prices-subtab" class="market-subtab-content active">
-          <div class="panel">
-            <div class="controls-grid">
-              <label>
-                Country
-                <select id="country">
-                  <option value="PT">Portugal</option>
-                </select>
-              </label>
+          <div id="analysisLayout" class="analysis-layout">
+            <aside id="filterSidebar" class="filter-sidebar">
+              <div class="filter-sidebar-header">
+                <h3>Filters</h3>
+                <button id="sidebarToggle" class="sidebar-toggle" type="button">
+                  Hide
+                </button>
+              </div>
 
-              <label>
-                Zone
-                <select id="zone">
-                  <option value="10YPT-REN------W">Portugal — REN zone</option>
-                </select>
-              </label>
+              <div class="filter-sidebar-body">
+                <div class="sidebar-controls">
+                  <label>
+                    Country
+                    <select id="country">
+                      <option value="PT">Portugal</option>
+                    </select>
+                  </label>
 
-              <label>
-                Start date
-                <input id="start" type="date" value="2025-01-01" />
-              </label>
+                  <label>
+                    Zone
+                    <select id="zone">
+                      <option value="10YPT-REN------W">
+                        Portugal — REN zone
+                      </option>
+                    </select>
+                  </label>
 
-              <label>
-                End date
-                <input id="end" type="date" value="2025-01-07" />
-              </label>
-            </div>
+                  <label>
+                    Start date
+                    <input id="start" type="date" value="2025-01-01" />
+                  </label>
 
-            <div class="price-selector-layout">
-              <label class="selector-panel">
-                Reference market
-                <select id="referencePrice"></select>
-                <span class="helper-text">
-                  This field accepts one reference price series.
-                </span>
-              </label>
+                  <label>
+                    End date
+                    <input id="end" type="date" value="2025-01-07" />
+                  </label>
+                </div>
 
-              <div class="selector-panel">
-                <div class="selector-title">Comparison markets</div>
-                <div id="comparisonPrices" class="option-list"></div>
-                <span class="helper-text">
-                  Select one or more markets to compare against the reference
-                  market.
-                </span>
+                <div class="selector-panel">
+                  <label>
+                    Reference market
+                    <select id="referencePrice"></select>
+                  </label>
+                  <span class="helper-text"> One reference price series. </span>
+                </div>
+
+                <div class="selector-panel">
+                  <div class="selector-title">Comparison markets</div>
+                  <div id="comparisonPrices" class="option-list"></div>
+                  <span class="helper-text">
+                    Select one or more markets to compare against the reference
+                    market.
+                  </span>
+                </div>
+
+                <p class="method-note">
+                  Spread convention: buying in the reference market and selling
+                  in the comparison markets. Spreads use exact timestamp matches
+                  only. Capacity price series are shown in the price chart but
+                  excluded from the spread chart.
+                </p>
+
+                <button id="loadButton" class="primary-button">
+                  Load data
+                </button>
+                <p id="message" class="message"></p>
+              </div>
+            </aside>
+
+            <div class="analysis-content">
+              <div class="charts-grid">
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <div>
+                      <h3 id="chartTitle">Price comparison</h3>
+                      <p id="chartSubtitle">
+                        Reference and comparison price series.
+                      </p>
+                    </div>
+                    <span id="modeBadge" class="mode-badge">Live API</span>
+                  </div>
+                  <div id="chart"></div>
+                </div>
+
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <div>
+                      <h3>Spread analysis</h3>
+                      <p id="spreadSubtitle">
+                        Comparison market minus reference market.
+                      </p>
+                    </div>
+                  </div>
+                  <div id="spreadChart"></div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <p class="method-note">
-              Spread convention: the dashboard assumes buying in the reference
-              market and selling in the comparison markets. Spreads are
-              calculated only for exact timestamp matches. When units differ,
-              spread values are normalized to the reference unit using the
-              series resolution.
-            </p>
-
-            <button id="loadButton" class="primary-button">Load data</button>
-            <p id="message" class="message"></p>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3 id="chartTitle">Price comparison</h3>
+                <p id="chartSubtitle">Reference and comparison price series.</p>
+              </div>
+              <span id="modeBadge" class="mode-badge">Live API</span>
+            </div>
+            <div id="chart"></div>
           </div>
 
-          <div class="charts-grid">
-            <div class="chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3 id="chartTitle">Price comparison</h3>
-                  <p id="chartSubtitle">Reference and comparison price series.</p>
-                </div>
-                <span id="modeBadge" class="mode-badge">Live API</span>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3>Spread analysis</h3>
+                <p id="spreadSubtitle">
+                  Comparison market minus reference market.
+                </p>
               </div>
-              <div id="chart"></div>
             </div>
-
-            <div class="chart-card">
-              <div class="chart-header">
-                <div>
-                  <h3>Spread analysis</h3>
-                  <p id="spreadSubtitle">
-                    Comparison market minus reference market.
-                  </p>
-                </div>
-              </div>
-              <div id="spreadChart"></div>
-            </div>
+            <div id="spreadChart"></div>
           </div>
+        </div>
 
         <div id="volumes-subtab" class="market-subtab-content">
           <div class="panel placeholder-panel">
@@ -164,6 +218,49 @@
               version.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section id="api-docs" class="page-section">
+        <div class="section-heading">
+          <p class="eyebrow">Public API</p>
+          <h2>API Documentation</h2>
+          <p>
+            The dashboard is powered by a public read-only FastAPI service
+            connected to a private PostgreSQL database.
+          </p>
+        </div>
+
+        <div class="panel">
+          <h3>Base URL</h3>
+          <p><code>https://samarao-lab-api.onrender.com/api/v1</code></p>
+
+          <h3>Example endpoint</h3>
+          <p>
+            <code
+              >/series/day_ahead_price?zone=PT&amp;start=2025-01-01&amp;end=2025-01-07&amp;source=REN</code
+            >
+          </p>
+        </div>
+      </section>
+
+      <section id="about" class="page-section">
+        <div class="section-heading">
+          <p class="eyebrow">Research portfolio</p>
+          <h2>About Samarao Lab</h2>
+          <p>
+            Samarao Lab is a research-oriented portfolio for electricity
+            markets, ancillary services, flexibility, and data-driven power
+            system analysis.
+          </p>
+        </div>
+
+        <div class="panel">
+          <p>
+            This platform combines live dashboards, a public API, and curated
+            energy market datasets to support future PhD-related research
+            modules.
+          </p>
         </div>
       </section>
 
