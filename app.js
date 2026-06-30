@@ -1,35 +1,54 @@
-
 const API_BASE_URL = "https://samarao-lab-api.onrender.com/api/v1";
+const SOURCE_CODE = "REN";
 
-const VARIABLE_LABELS = {
-  day_ahead_price: "Day-Ahead Price",
-  intraday_price_session_1: "Intraday Price Session 1",
-  intraday_price_session_2: "Intraday Price Session 2",
-  intraday_price_session_3: "Intraday Price Session 3",
-  mfrr_price_schedule_up: "mFRR Scheduled Price Up",
-  mfrr_price_schedule_down: "mFRR Scheduled Price Down",
-  bafrr_final_price_up: "BaFRR Final Price Up",
-  bafrr_final_price_down: "BaFRR Final Price Down",
-  bafrr_contracted_up: "BaFRR Contracted Up",
-  bafrr_contracted_down: "BaFRR Contracted Down",
-  afrr_activation_up: "aFRR Activation Up",
-  afrr_activation_down: "aFRR Activation Down",
-  mfrr_price_direct_q1t_up: "mFRR Direct Price Q1t Up",
-  mfrr_price_direct_q1t_down: "mFRR Direct Price Q1t Down",
-  mfrr_price_direct_qt_up: "mFRR Direct Price Qt Up",
-  mfrr_price_direct_qt_down: "mFRR Direct Price Qt Down",
-};
+const PRICE_VARIABLES = [
+  {
+    code: "day_ahead_price",
+    label: "Day-Ahead",
+  },
+  {
+    code: "intraday_price_session_1",
+    label: "IDA 1",
+  },
+  {
+    code: "intraday_price_session_2",
+    label: "IDA 2",
+  },
+  {
+    code: "intraday_price_session_3",
+    label: "IDA 3",
+  },
+  {
+    code: "mfrr_price_schedule_up",
+    label: "mFRR SA",
+  },
+  {
+    code: "bafrr_final_price_up",
+    label: "BaFRR Final Up",
+  },
+  {
+    code: "bafrr_final_price_down",
+    label: "BaFRR Final Down",
+  },
+];
+
+const PRICE_LABEL_BY_CODE = Object.fromEntries(
+  PRICE_VARIABLES.map((item) => [item.code, item.label])
+);
 
 const elements = {
   navLinks: document.querySelectorAll(".nav-link"),
   sections: document.querySelectorAll(".page-section"),
 
-  variables: document.getElementById("variables"),
+  marketSubtabs: document.querySelectorAll(".market-subtab"),
+  marketSubtabContents: document.querySelectorAll(".market-subtab-content"),
+
+  country: document.getElementById("country"),
   zone: document.getElementById("zone"),
-  source: document.getElementById("source"),
-  resolution: document.getElementById("resolution"),
   start: document.getElementById("start"),
   end: document.getElementById("end"),
+  referencePrice: document.getElementById("referencePrice"),
+  comparisonPrices: document.getElementById("comparisonPrices"),
   loadButton: document.getElementById("loadButton"),
 
   statVariable: document.getElementById("statVariable"),
@@ -39,6 +58,7 @@ const elements = {
 
   chartTitle: document.getElementById("chartTitle"),
   chartSubtitle: document.getElementById("chartSubtitle"),
+  spreadSubtitle: document.getElementById("spreadSubtitle"),
   modeBadge: document.getElementById("modeBadge"),
   message: document.getElementById("message"),
 };
@@ -70,20 +90,104 @@ function setupNavigation() {
   setActiveSection(validSection);
 }
 
-function getSelectedVariables() {
+function setupMarketSubtabs() {
+  elements.marketSubtabs.forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetId = button.dataset.subtab;
+
+      elements.marketSubtabs.forEach((item) => {
+        item.classList.toggle("active", item === button);
+      });
+
+      elements.marketSubtabContents.forEach((content) => {
+        content.classList.toggle("active", content.id === targetId);
+      });
+    });
+  });
+}
+
+function setupPriceSelectors() {
+  elements.referencePrice.innerHTML = PRICE_VARIABLES.map((variable) => {
+    return `<option value="${variable.code}">${variable.label}</option>`;
+  }).join("");
+
+  elements.referencePrice.value = "day_ahead_price";
+
+  updateComparisonOptions(["intraday_price_session_1"]);
+
+  elements.referencePrice.addEventListener("change", () => {
+    const selectedComparisonCodes = getSelectedComparisonVariables();
+    updateComparisonOptions(selectedComparisonCodes);
+  });
+}
+
+function updateComparisonOptions(selectedCodes = []) {
+  const referenceCode = elements.referencePrice.value;
+
+  const availableComparisons = PRICE_VARIABLES.filter((variable) => {
+    return variable.code !== referenceCode;
+  });
+
+  let safeSelectedCodes = selectedCodes.filter((code) => code !== referenceCode);
+
+  if (safeSelectedCodes.length === 0) {
+    const defaultComparison = availableComparisons.find(
+      (variable) => variable.code === "intraday_price_session_1"
+    );
+
+    safeSelectedCodes = [
+      defaultComparison ? defaultComparison.code : availableComparisons[0].code,
+    ];
+  }
+
+  elements.comparisonPrices.innerHTML = availableComparisons
+    .map((variable) => {
+      const checked = safeSelectedCodes.includes(variable.code) ? "checked" : "";
+
+      return `
+        <label class="checkbox-row">
+          <input type="checkbox" value="${variable.code}" ${checked} />
+          ${variable.label}
+        </label>
+      `;
+    })
+    .join("");
+}
+
+function getSelectedComparisonVariables() {
   return Array.from(
-    document.querySelectorAll("#variables input[type='checkbox']:checked")
+    elements.comparisonPrices.querySelectorAll("input[type='checkbox']:checked")
   ).map((input) => input.value);
 }
 
 function getFilters() {
   return {
-    variableCodes: getSelectedVariables(),
+    country: elements.country.value,
     zone: elements.zone.value,
-    source: elements.source.value,
+    source: SOURCE_CODE,
     start: elements.start.value,
     end: elements.end.value,
+    referenceCode: elements.referencePrice.value,
+    comparisonCodes: getSelectedComparisonVariables(),
   };
+}
+
+function validateFilters(filters) {
+  if (!filters.start || !filters.end) {
+    throw new Error("Select both start and end dates.");
+  }
+
+  if (filters.end < filters.start) {
+    throw new Error("End date must be greater than or equal to start date.");
+  }
+
+  if (!filters.referenceCode) {
+    throw new Error("Select one reference market.");
+  }
+
+  if (filters.comparisonCodes.length === 0) {
+    throw new Error("Select at least one comparison market.");
+  }
 }
 
 function buildApiUrl(variableCode, filters) {
@@ -99,10 +203,6 @@ function buildApiUrl(variableCode, filters) {
 }
 
 async function fetchSeries(variableCode, filters) {
-  if (!API_BASE_URL) {
-    return createMockResponse(variableCode, filters);
-  }
-
   const url = buildApiUrl(variableCode, filters);
   console.log("Fetching:", url);
 
@@ -116,134 +216,239 @@ async function fetchSeries(variableCode, filters) {
     });
   } catch (error) {
     throw new Error(
-      `Network/CORS error while loading ${variableCode}. Tried URL: ${url}`
+      `Network/CORS error while loading ${PRICE_LABEL_BY_CODE[variableCode] || variableCode}. Tried URL: ${url}`
     );
   }
 
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `API error ${response.status} while loading ${variableCode}: ${errorText}`
+      `API error ${response.status} while loading ${PRICE_LABEL_BY_CODE[variableCode] || variableCode}: ${errorText}`
     );
   }
 
   return response.json();
 }
 
-async function fetchAllSeries(filters) {
-  const requests = filters.variableCodes.map((variableCode) => {
-    return fetchSeries(variableCode, filters);
-  });
+async function fetchDashboardData(filters) {
+  const variableCodes = [
+    filters.referenceCode,
+    ...filters.comparisonCodes.filter((code) => code !== filters.referenceCode),
+  ];
 
-  return Promise.all(requests);
-}
+  const payloads = await Promise.all(
+    variableCodes.map((variableCode) => fetchSeries(variableCode, filters))
+  );
 
-function createMockResponse(variableCode, filters) {
-  const data = [];
-  const start = new Date(`${filters.start}T00:00:00Z`);
+  const referencePayload = payloads.find(
+    (payload) => payload.variable_code === filters.referenceCode
+  );
 
-  const isHourly = filters.resolution === "PT60M";
-  const intervalMinutes = isHourly ? 60 : 15;
-  const pointsPerDay = isHourly ? 24 : 96;
-
-  const startDate = new Date(`${filters.start}T00:00:00Z`);
-  const endDate = new Date(`${filters.end}T00:00:00Z`);
-  const dayCount =
-    Math.max(1, Math.round((endDate - startDate) / (24 * 60 * 60 * 1000)) + 1);
-
-  const variableIndex = Object.keys(VARIABLE_LABELS).indexOf(variableCode);
-  const safeIndex = variableIndex >= 0 ? variableIndex : 0;
-
-  for (let i = 0; i < pointsPerDay * dayCount; i++) {
-    const timestamp = new Date(start.getTime() + i * intervalMinutes * 60 * 1000);
-
-    const dailyShape = Math.sin((i / pointsPerDay) * Math.PI * 2);
-    const intradayNoise = Math.sin(i / 3 + safeIndex);
-    const base = 60 + safeIndex * 5;
-    const value = base + 18 * dailyShape + 4 * intradayNoise;
-
-    data.push({
-      datetime_utc_start: timestamp.toISOString(),
-      datetime_utc_end: new Date(
-        timestamp.getTime() + intervalMinutes * 60 * 1000
-      ).toISOString(),
-      value: Number(value.toFixed(2)),
-      source_code: filters.source,
-      resolution_code: filters.resolution,
-    });
-  }
+  const comparisonPayloads = payloads.filter(
+    (payload) => payload.variable_code !== filters.referenceCode
+  );
 
   return {
-    zone_query: filters.zone,
-    zone_code: filters.zone === "PT" ? "10YPT-REN------W" : filters.zone,
-    country_iso_code: "PT",
-    country_name: "Portugal",
-    variable_code: variableCode,
-    variable_name: VARIABLE_LABELS[variableCode] || formatVariableName(variableCode),
-    unit_symbol: "EUR/MWh",
-    currency_code: "EUR",
-    source_code: filters.source,
-    resolution_code: filters.resolution,
-    start_date: filters.start,
-    end_date: filters.end,
-    count_total: data.length,
-    returned: data.length,
-    limit: 50000,
-    offset: 0,
-    has_more: false,
-    next_offset: null,
-    generated_at_utc: new Date().toISOString(),
-    data,
+    payloads,
+    referencePayload,
+    comparisonPayloads,
   };
 }
 
-function formatVariableName(variableCode) {
-  return variableCode
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+function getDisplayName(payload) {
+  return PRICE_LABEL_BY_CODE[payload.variable_code] || payload.variable_name || payload.variable_code;
 }
 
 function getUniqueUnits(payloads) {
-  return [...new Set(payloads.map((payload) => payload.unit_symbol || "-"))];
+  return [
+    ...new Set(
+      payloads.map((payload) => payload.unit_symbol || "-")
+    ),
+  ];
 }
 
-function updateStats(payloads, filters) {
+function updateStats(payloads) {
   const returnedRows = payloads.reduce((sum, payload) => sum + payload.returned, 0);
   const units = getUniqueUnits(payloads);
 
-  elements.statVariable.textContent = `${filters.variableCodes.length} selected`;
+  elements.statVariable.textContent = `${payloads.length} series`;
   elements.statRows.textContent = returnedRows.toLocaleString();
-  elements.statUnit.textContent = units.length === 1 ? units[0] : "Mixed units";
-  elements.statSource.textContent = filters.source;
+  elements.statUnit.textContent = units.length === 1 ? units[0] : units.join(" / ");
+  elements.statSource.textContent = SOURCE_CODE;
 }
 
-function renderChart(payloads) {
+function renderPriceChart(referencePayload, comparisonPayloads) {
+  const payloads = [referencePayload, ...comparisonPayloads];
+
+  const primaryUnit = referencePayload.unit_symbol || "Value";
+  const secondaryUnits = [
+    ...new Set(
+      payloads
+        .map((payload) => payload.unit_symbol || "Value")
+        .filter((unit) => unit !== primaryUnit)
+    ),
+  ];
+
+  const hasSecondaryAxis = secondaryUnits.length > 0;
+
   const traces = payloads.map((payload) => {
+    const unit = payload.unit_symbol || "Value";
+    const usesSecondaryAxis = hasSecondaryAxis && unit !== primaryUnit;
+
     return {
       x: payload.data.map((row) => row.datetime_utc_start),
       y: payload.data.map((row) => row.value),
       type: "scatter",
       mode: "lines",
-      name: payload.variable_name || payload.variable_code,
+      name: `${getDisplayName(payload)} (${unit})`,
+      yaxis: usesSecondaryAxis ? "y2" : "y",
       line: {
-        width: 2,
+        width: payload.variable_code === referencePayload.variable_code ? 3 : 2,
       },
     };
   });
 
-  const units = getUniqueUnits(payloads);
-
   const layout = {
-    margin: { l: 64, r: 24, t: 24, b: 64 },
+    margin: { l: 72, r: hasSecondaryAxis ? 72 : 24, t: 24, b: 72 },
     xaxis: {
       title: "UTC timestamp",
       showgrid: true,
     },
     yaxis: {
-      title: units.length === 1 ? units[0] : "Value",
+      title: primaryUnit,
       showgrid: true,
     },
+    hovermode: "x unified",
+    legend: {
+      orientation: "h",
+      y: -0.25,
+    },
+  };
+
+  if (hasSecondaryAxis) {
+    layout.yaxis2 = {
+      title: secondaryUnits.join(" / "),
+      overlaying: "y",
+      side: "right",
+      showgrid: false,
+    };
+  }
+
+  const config = {
+    responsive: true,
+    displaylogo: false,
+  };
+
+  Plotly.newPlot("chart", traces, layout, config);
+}
+
+function parseResolutionMinutes(resolutionCode) {
+  if (!resolutionCode) {
+    return 60;
+  }
+
+  const minuteMatch = resolutionCode.match(/^PT(\d+)M$/i);
+  if (minuteMatch) {
+    return Number(minuteMatch[1]);
+  }
+
+  const hourMatch = resolutionCode.match(/^PT(\d+)H$/i);
+  if (hourMatch) {
+    return Number(hourMatch[1]) * 60;
+  }
+
+  return 60;
+}
+
+function normalizeUnitSymbol(unitSymbol) {
+  return String(unitSymbol || "")
+    .replace("€", "EUR")
+    .replace(/\s+/g, "")
+    .toUpperCase();
+}
+
+function convertValueToUnit(value, fromUnit, toUnit, resolutionCode) {
+  const normalizedFrom = normalizeUnitSymbol(fromUnit);
+  const normalizedTo = normalizeUnitSymbol(toUnit);
+
+  if (!normalizedFrom || !normalizedTo || normalizedFrom === normalizedTo) {
+    return value;
+  }
+
+  const resolutionMinutes = parseResolutionMinutes(resolutionCode);
+  const factor = 60 / resolutionMinutes;
+
+  if (normalizedFrom === "EUR/MW" && normalizedTo === "EUR/MWH") {
+    return value * factor;
+  }
+
+  if (normalizedFrom === "EUR/MWH" && normalizedTo === "EUR/MW") {
+    return value / factor;
+  }
+
+  return value;
+}
+
+function buildTimestampMap(payload) {
+  return new Map(
+    payload.data.map((row) => [row.datetime_utc_start, row])
+  );
+}
+
+function buildSpreadTraces(referencePayload, comparisonPayloads) {
+  const referenceMap = buildTimestampMap(referencePayload);
+  const referenceUnit = referencePayload.unit_symbol || "Value";
+
+  return comparisonPayloads.map((comparisonPayload) => {
+    const x = [];
+    const y = [];
+
+    comparisonPayload.data.forEach((comparisonRow) => {
+      const referenceRow = referenceMap.get(comparisonRow.datetime_utc_start);
+
+      if (!referenceRow) {
+        return;
+      }
+
+      const normalizedComparisonValue = convertValueToUnit(
+        comparisonRow.value,
+        comparisonPayload.unit_symbol,
+        referenceUnit,
+        comparisonRow.resolution_code
+      );
+
+      const spread = normalizedComparisonValue - referenceRow.value;
+
+      x.push(comparisonRow.datetime_utc_start);
+      y.push(Number(spread.toFixed(4)));
+    });
+
+    return {
+      x,
+      y,
+      type: "bar",
+      name: `${getDisplayName(comparisonPayload)} - ${getDisplayName(referencePayload)}`,
+    };
+  });
+}
+
+function renderSpreadChart(referencePayload, comparisonPayloads) {
+  const traces = buildSpreadTraces(referencePayload, comparisonPayloads);
+  const referenceUnit = referencePayload.unit_symbol || "reference unit";
+
+  const totalSpreadRows = traces.reduce((sum, trace) => sum + trace.y.length, 0);
+
+  const layout = {
+    margin: { l: 72, r: 24, t: 24, b: 72 },
+    xaxis: {
+      title: "UTC timestamp",
+      showgrid: true,
+    },
+    yaxis: {
+      title: `Spread (${referenceUnit})`,
+      showgrid: true,
+    },
+    barmode: "group",
     hovermode: "x unified",
     legend: {
       orientation: "h",
@@ -256,21 +461,9 @@ function renderChart(payloads) {
     displaylogo: false,
   };
 
-  Plotly.newPlot("chart", traces, layout, config);
-}
+  Plotly.newPlot("spreadChart", traces, layout, config);
 
-function validateFilters(filters) {
-  if (filters.variableCodes.length === 0) {
-    throw new Error("Select at least one variable.");
-  }
-
-  if (!filters.start || !filters.end) {
-    throw new Error("Select both start and end dates.");
-  }
-
-  if (filters.end < filters.start) {
-    throw new Error("End date must be greater than or equal to start date.");
-  }
+  return totalSpreadRows;
 }
 
 async function loadDashboard() {
@@ -283,28 +476,37 @@ async function loadDashboard() {
   try {
     validateFilters(filters);
 
-    const payloads = await fetchAllSeries(filters);
+    const { payloads, referencePayload, comparisonPayloads } =
+      await fetchDashboardData(filters);
 
-    elements.modeBadge.textContent = API_BASE_URL ? "Live API" : "Mock mode";
+    if (!referencePayload) {
+      throw new Error("Reference market did not return data.");
+    }
 
-    elements.chartTitle.textContent = "Market Data Comparison";
+    elements.modeBadge.textContent = "Live API";
+    elements.chartTitle.textContent = "Price comparison";
     elements.chartSubtitle.textContent =
-      `${filters.zone} · ${filters.source} · ${filters.start} to ${filters.end}`;
+      `${filters.country} · ${filters.zone} · ${filters.start} to ${filters.end}`;
 
-    updateStats(payloads, filters);
-    renderChart(payloads);
+    elements.spreadSubtitle.textContent =
+      `Buying in ${getDisplayName(referencePayload)} and selling in selected comparison markets.`;
+
+    updateStats(payloads);
+    renderPriceChart(referencePayload, comparisonPayloads);
+
+    const spreadRows = renderSpreadChart(referencePayload, comparisonPayloads);
 
     const totalRows = payloads.reduce((sum, payload) => sum + payload.returned, 0);
-    const anyHasMore = payloads.some((payload) => payload.has_more);
+    const emptySeries = payloads.filter((payload) => payload.returned === 0);
 
     if (totalRows === 0) {
       elements.message.textContent = "No data returned for these filters.";
-    } else if (anyHasMore) {
+    } else if (emptySeries.length > 0) {
       elements.message.textContent =
-        "Some series have more data available. Pagination will be added later.";
+        `Loaded ${totalRows.toLocaleString()} rows. Some selected markets returned no data.`;
     } else {
       elements.message.textContent =
-        `Showing ${totalRows.toLocaleString()} total rows across ${payloads.length} series.`;
+        `Loaded ${totalRows.toLocaleString()} rows. Spread chart uses ${spreadRows.toLocaleString()} exact timestamp matches.`;
     }
   } catch (error) {
     console.error(error);
@@ -316,6 +518,8 @@ async function loadDashboard() {
 }
 
 setupNavigation();
+setupMarketSubtabs();
+setupPriceSelectors();
 
 elements.loadButton.addEventListener("click", loadDashboard);
 
